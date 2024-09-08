@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DummyTube</title>
+    <style>
+        
+        .content{
+            /* margin-top: 50px; */
+
+            margin: 50px auto;
+            width: 80%;
+            border: 1px solid black;
+            display: grid;
+            grid-template-columns: repeat(4,1fr);
+            gap:15px;
+            padding: 15px;
+        }
+        .content div{
+            width: 100%;
+            margin-top: 25px;
+        }
+        .content div img{
+            width: 100%;
+            border-radius: 15px;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <input type="text" id="text">
+        <button id="search-btn">Search</button>
+        <button id="reset-btn">reset</button>
+    </div>
+    <div class="content">
+
+    </div>
+</body>
+</html>
+<script>
+    const API_KEY ='AIzaSyAWowzhe_C7seP0bb6pwBey54CsdZOtj3w';
+    const contentEl = document.querySelector(".content");
+     document.getElementById("search-btn").addEventListener("click",displayData)
+    async function displayData() {
+        try{
+            
+            const SEARCH = document.getElementById("text").value;
+
+            let response = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${SEARCH}&type=video&maxResults=50&key=${API_KEY}`);
+
+            let data = await response.json();
+            console.log(data.items);
+
+
+            if(contentEl.innerHTML == ""){
+                contentEl.innerHTML="";
+                let response = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=trending&type=video&maxResults=50&key=${API_KEY}`);
+                let data = await response.json();
+                renderToDom(data.items)
+
+            }
+            contentEl.innerHTML="";
+            renderToDom(data.items)
+            
+        }
+        catch(err) {
+            console.log(err);
+        }
+    }
+
+
+    // displayData();
+
+    function renderToDom(data){
+        // const dataElement = document.createElement("div");
+        // dataElement.className="DataList";
+        data.forEach(element => {
+                let id = element.id.videoId;
+                let imgSrc = element.snippet.thumbnails.medium.url;
+                // console.log(imgSrc);
+                
+                let title = element.snippet.title;
+
+
+
+                const dataEl= document.createElement("div");
+                dataEl.innerHTML=`
+                    <img src='${imgSrc}' alt='videoImage'/>
+                    <h3>${title}</h3>
+                `;
+                dataEl.addEventListener("click",()=>{
+                    navigateToVideo(element);
+                });
+                // dataElement.append(dataEl);
+                contentEl.append(dataEl);
+        });
+    }
+
+
+    function navigateToVideo(id){
+        console.log(id);
+
+        localStorage.setItem("youtubeId",JSON.stringify(id));   
+        window.location.href="/video.html";
+    }
+
+</script>
